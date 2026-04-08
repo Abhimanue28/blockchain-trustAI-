@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from .db import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -14,6 +15,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     events = relationship("SecurityEvent", back_populates="user")
+
 
 class SecurityEvent(Base):
     __tablename__ = "security_events"
@@ -33,17 +35,16 @@ class SecurityEvent(Base):
     payload_size = Column(Integer, nullable=True)
 
     # AI outputs
-    anomaly_label = Column(String(20), nullable=False, default="UNKNOWN")  # NORMAL | ANOMALY | UNKNOWN
+    anomaly_label = Column(String(20), nullable=False, default="UNKNOWN")  # predicted: NORMAL | ANOMALY | UNKNOWN
+    true_label = Column(String(20), nullable=True)  # actual/ground truth: NORMAL | ANOMALY
     risk_score = Column(Float, nullable=False, default=0.0)
 
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     user = relationship("User", back_populates="events")
 
+
 class AuditBlock(Base):
-    """
-    Tamper-evident audit chain (blockchain-style).
-    """
     __tablename__ = "audit_blocks"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -52,5 +53,6 @@ class AuditBlock(Base):
     data = Column(Text, nullable=False)
     previous_hash = Column(String(64), nullable=False)
     hash = Column(String(64), nullable=False)
+
 
 Index("ix_audit_blocks_index_unique", AuditBlock.index, unique=True)
